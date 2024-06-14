@@ -143,6 +143,9 @@
     <!-- Load Leaflet Control Geocoder JS -->
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
+    <!-- Load Leaflet Locate Control JS -->
+    <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+
     <!-- Custom JavaScript -->
     <script>
         // Initialize the map
@@ -165,7 +168,7 @@
             getAddress(latlng.lat, latlng.lng);
         }).addTo(map);
 
-        // Add Geolocation control to the map
+        // Add Leaflet Locate Control to the map
         L.control.locate().addTo(map);
 
         // Variable to hold the marker
