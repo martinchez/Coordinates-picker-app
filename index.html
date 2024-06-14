@@ -2,32 +2,49 @@
 <html>
 
 <head>
-    <title>Cordinates Picker</title>
+    <title>GeoLocate</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Load Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
+    <!-- Load Poppins Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
     <!-- Custom CSS -->
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 2.5em;
+            color: #4A90E2;
         }
 
         #container {
             display: flex;
             flex-direction: row-reverse;
+            margin: 20px;
         }
 
         #map {
-            height: 600px;
+            height: 70vh;
             width: 60%;
         }
 
         .coordinates {
             width: 40%;
             padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
 
         .coordinates label {
@@ -39,16 +56,45 @@
             width: 100%;
             padding: 5px;
             margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
 
         .share-location {
             margin-top: 20px;
         }
+
+        @media (max-width: 768px) {
+            #container {
+                flex-direction: column;
+            }
+
+            #map {
+                width: 110%;
+                height: 400px;
+                order: 1;
+            }
+
+            .coordinates {
+                width: 100%;
+                order: 2;
+                margin-top: -50px;
+                background-color: rgba(74, 144, 226, 0.9);
+                color: #ffffff;
+                padding: 15px;
+                text-align: center;
+            }
+
+            .coordinates input[type="text"] {
+                color: #000000;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <h1>COORDINATE PICKER CLICK TO COPY OR SHARE YOUR LOCATION</h1>
+    <h1>Cordinates Picker</h1>
+    <!-- <hr> -->
     <div id="container">
         <div id="map"></div>
         <div class="coordinates">
@@ -193,6 +239,3 @@
 </body>
 
 </html>
-
-
-<!-- api key:  373683d91c6d49e38571fffdb2f6782f -->
