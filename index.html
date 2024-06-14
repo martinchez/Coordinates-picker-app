@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cordinates Picker</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Load Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: row-reverse;
+        }
+
+        #map {
+            height: 600px;
+            width: 60%;
+        }
+
+        .coordinates {
+            width: 40%;
+            padding: 20px;
+        }
+
+        .coordinates label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .coordinates input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+
+        .share-location {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Leaflet Map Click Coordinates with Address</h1>
+    <div id="container">
+        <div id="map"></div>
+        <div class="coordinates">
+            <label for="address">Address:</label>
+            <input type="text" id="address" readonly>
+        
+            <div>
+                <h2>DD (decimal degrees)</h2>
+                <label for="lat">Latitude:</label>
+                <input type="text" id="lat" readonly>
+                <label for="lng">Longitude:</label>
+                <input type="text" id="lng" readonly>
+            </div>
+        
+            <div>
+                <h2>DMS (degrees, minutes, seconds)</h2>
+                <label for="lat_dms">Latitude:</label>
+                <input type="text" id="lat_dms" readonly>
+                <label for="lng_dms">Longitude:</label>
+                <input type="text" id="lng_dms" readonly>
+            </div>
+        
+            <div class="share-location">
+                <h2>Share my Location</h2>
+                <p>If you need to share your location with someone, you can simply send them the following link:</p>
+                <input type="text" id="share_url" readonly>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([-0.398221, 36.960749], 13);
+
+        // Load and display tile layers on the map
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Variable to hold the marker
+        var marker;
+
+        // Function to convert coordinates to address
+        function getAddress(lat, lng) {
+            var apiKey = '373683d91c6d49e38571fffdb2f6782f'; // Replace with your API key
+            var url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${apiKey}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results.length > 0) {
+                        var address = data.results[0].formatted;
+                        document.getElementById('address').value = address;
+                    } else {
+                        document.getElementById('address').value = 'Address not found';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching address:', error);
+                    document.getElementById('address').value = 'Error fetching address';
+                });
+        }
+
+        // Function to convert Decimal Degrees to DMS
+        function toDMS(coordinate, isLng) {
+            var absolute = Math.abs(coordinate);
+            var degrees = Math.floor(absolute);
+            var minutesNotTruncated = (absolute - degrees) * 60;
+            var minutes = Math.floor(minutesNotTruncated);
+            var seconds = ((minutesNotTruncated - minutes) * 60).toFixed(3);
+
+            var direction = coordinate >= 0 ? (isLng ? 'E' : 'N') : (isLng ? 'W' : 'S');
+
+            return `${degrees}° ${minutes}' ${seconds}" ${direction}`;
+        }
+
+        // Function to update the coordinates display
+        function updateCoordinatesDisplay(lat, lng) {
+            document.getElementById('lat').value = lat;
+            document.getElementById('lng').value = lng;
+            document.getElementById('lat_dms').value = toDMS(lat, false);
+            document.getElementById('lng_dms').value = toDMS(lng, true);
+
+            var shareUrl = `${window.location.origin}${window.location.pathname}?lat=${lat}&lng=${lng}`;
+            document.getElementById('share_url').value = shareUrl;
+        }
+
+        // Function to place a marker on the map
+        function placeMarker(lat, lng) {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 13);
+        }
+
+        // Add click event listener to the map
+        map.on('click', function (e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            // Update input fields with the coordinates
+            updateCoordinatesDisplay(lat, lng);
+
+            // Get the address for the clicked coordinates
+            getAddress(lat, lng);
+
+            // Place a marker on the map
+            placeMarker(lat, lng);
+        });
+
+        // Function to get URL parameters
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Check for URL parameters and place marker if they exist
+        var latParam = getUrlParameter('lat');
+        var lngParam = getUrlParameter('lng');
+        if (latParam && lngParam) {
+            var lat = parseFloat(latParam);
+            var lng = parseFloat(lngParam);
+
+            // Update input fields with the coordinates
+            updateCoordinatesDisplay(lat, lng);
+
+            // Get the address for the coordinates
+            getAddress(lat, lng);
+
+            // Place a marker on the map
+            placeMarker(lat, lng);
+        }
+    </script>
+</body>
+
+</html>
+
+
+<!-- api key:  373683d91c6d49e38571fffdb2f6782f -->
