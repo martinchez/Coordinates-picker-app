@@ -2,22 +2,39 @@
 <html>
 
 <head>
-    <title>Cordinates Picker</title>
+    <title>GeoLocate</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Load Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
+    <!-- Load Poppins Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Load Leaflet Control Geocoder CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
     <!-- Custom CSS -->
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 2.5em;
+            color: #4A90E2;
         }
 
         #container {
             display: flex;
             flex-direction: row-reverse;
+            margin: 20px;
         }
 
         #map {
@@ -28,6 +45,9 @@
         .coordinates {
             width: 40%;
             padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
 
         .coordinates label {
@@ -39,16 +59,49 @@
             width: 100%;
             padding: 5px;
             margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
 
         .share-location {
             margin-top: 20px;
         }
+
+        .leaflet-control-geocoder {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            #container {
+                flex-direction: column;
+            }
+
+            #map {
+                width: 100%;
+                height: 400px;
+                order: 1;
+            }
+
+            .coordinates {
+                width: 100%;
+                order: 2;
+                margin-top: -50px;
+                background-color: rgba(74, 144, 226, 0.9);
+                color: #ffffff;
+                padding: 15px;
+                text-align: center;
+            }
+
+            .coordinates input[type="text"] {
+                color: #000000;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <h1>COORDINATE PICKER CLICK TO COPY OR SHARE YOUR LOCATION</h1>
+    <h1>GeoLocate: Click to Copy or Share Your Location</h1>
     <div id="container">
         <div id="map"></div>
         <div class="coordinates">
@@ -76,22 +129,44 @@
                 <p>If you need to share your location with someone, you can simply send them the following link:</p>
                 <input type="text" id="share_url" readonly>
             </div>
+
+            <div id="search-container">
+                <h2>Search for a Location</h2>
+                <div id="search-input"></div>
+            </div>
         </div>
     </div>
 
     <!-- Load Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+    <!-- Load Leaflet Control Geocoder JS -->
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
     <!-- Custom JavaScript -->
     <script>
         // Initialize the map
-        var map = L.map('map').setView([-0.398221, 36.960749], 13);
+        var map = L.map('map').setView([0, 0], 2); // Default to world view
 
         // Load and display tile layers on the map
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+        // Initialize the geocoder control and add it to the map
+        var geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false
+        }).on('markgeocode', function (e) {
+            var latlng = e.geocode.center;
+            map.setView(latlng, 13);
+            updateCoordinatesDisplay(latlng.lat, latlng.lng);
+            placeMarker(latlng.lat, latlng.lng);
+            getAddress(latlng.lat, latlng.lng);
+        }).addTo(map);
+
+        // Add Geolocation control to the map
+        L.control.locate().addTo(map);
 
         // Variable to hold the marker
         var marker;
@@ -150,21 +225,6 @@
             map.setView([lat, lng], 13);
         }
 
-        // Add click event listener to the map
-        map.on('click', function (e) {
-            var lat = e.latlng.lat;
-            var lng = e.latlng.lng;
-
-            // Update input fields with the coordinates
-            updateCoordinatesDisplay(lat, lng);
-
-            // Get the address for the clicked coordinates
-            getAddress(lat, lng);
-
-            // Place a marker on the map
-            placeMarker(lat, lng);
-        });
-
         // Function to get URL parameters
         function getUrlParameter(name) {
             name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -193,6 +253,3 @@
 </body>
 
 </html>
-
-
-<!-- api key:  373683d91c6d49e38571fffdb2f6782f -->
